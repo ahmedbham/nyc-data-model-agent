@@ -1,0 +1,63 @@
+{
+  "patients": {
+    "row_count": 8,
+    "primary_key": [
+      "patient_id"
+    ],
+    "null_summary": {
+      "patient_id": 0,
+      "mrn": 0,
+      "birth_date": 0,
+      "gender": 0,
+      "insurance_type": 0,
+      "zip_code": 0
+    },
+    "notes": [
+      "One row per synthetic patient.",
+      "Insurance type can be used as a cohort dimension."
+    ]
+  },
+  "encounters": {
+    "row_count": 10,
+    "primary_key": [
+      "encounter_id"
+    ],
+    "foreign_keys": {
+      "patient_id": "patients.patient_id",
+      "facility_id": "facilities.facility_id",
+      "department_id": "departments.department_id"
+    },
+    "candidate_measures": [
+      "length_of_stay_days",
+      "index_discharge_flag",
+      "readmission_30d_flag"
+    ],
+    "notes": [
+      "Patient P001 demonstrates a 30-day readmission.",
+      "Patient P004 has two encounters across the demo time range."
+    ]
+  },
+  "diagnoses": {
+    "row_count": 11,
+    "primary_key": [
+      "encounter_id",
+      "diagnosis_sequence"
+    ],
+    "notes": [
+      "Primary diagnosis is identified by is_primary = 1.",
+      "This table enables diagnosis-level cohort slicing."
+    ]
+  },
+  "departments": {
+    "row_count": 6,
+    "primary_key": [
+      "department_id"
+    ]
+  },
+  "facilities": {
+    "row_count": 3,
+    "primary_key": [
+      "facility_id"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+department_id,facility_id,department_name,department_type,bed_count
+101,1,Cardiology,Inpatient,36
+102,1,General Medicine,Inpatient,42
+201,2,Pulmonology,Inpatient,28
+202,2,Intensive Care,Inpatient,20
+301,3,General Surgery,Inpatient,30
+302,3,Telemetry,Inpatient,26

@@ -1,0 +1,9 @@
+## Business Requirements
+### Prioritized Use Cases
+- **Autonomous Data Exploration**: Based on PRD and identification of supporting source, schema and tables agent will generate all exploratory data analysis to understand underlying data supporting the business focus area.
+- **Target data model and supporting data flows**: Based on PRD, related universe of questions to be answered, metrics to be calculated, generate a logical data model to support 1) self-service analytics and 2) dashboards. Draw the logical data flow showing the necessary transformation steps into the target data model.
+- **SQL & Model Generation**: Generate and execute the DDL and DML to create the model and supporting pipelines based on the initial logical modeling step created in the planning and discovery phase.
+### Additional Use Cases
+- **Schema Design & Review**: Paste in a set of business requirements or a source system ERD and get back a proposed dimensional model, naming convention audit, or Gold-layer schema design with suggested conformed dimensions and grain definitions. Turns a whiteboard session into a starting artifact
+- **Legacy Code Modernization**: Feed old, undocumented stored procedures or legacy ETL scripts into an AI to refactor them into modern, modular dbt models or Python functions.
+- **Data Quality Rule Generation** — Describe a table's expected behavior and get back a set oftests, Great Expectations suites, or Snowflake constraints covering nulls, uniqueness, referential integrity, accepted value ranges, and freshness. Catches the validation rules you'd eventually write but wouldn't get to until something broke.

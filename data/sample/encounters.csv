@@ -1,0 +1,11 @@
+encounter_id,patient_id,facility_id,department_id,admit_date,discharge_date,admission_type,discharge_disposition
+E1001,P001,1,102,2026-01-03,2026-01-07,Emergency,Home
+E1002,P002,2,201,2026-01-05,2026-01-10,Emergency,Home
+E1003,P003,1,101,2026-01-08,2026-01-12,Elective,Home
+E1004,P004,3,301,2026-01-11,2026-01-19,Emergency,Skilled Nursing
+E1005,P001,1,102,2026-01-26,2026-01-30,Emergency,Home
+E1006,P005,2,202,2026-02-01,2026-02-08,Emergency,Home
+E1007,P006,3,302,2026-02-03,2026-02-06,Urgent,Home
+E1008,P007,1,101,2026-02-08,2026-02-14,Emergency,Home
+E1009,P008,2,201,2026-02-10,2026-02-13,Elective,Home
+E1010,P004,3,301,2026-02-15,2026-02-22,Emergency,Rehab

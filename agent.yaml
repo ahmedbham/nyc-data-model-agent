@@ -1,0 +1,14 @@
+name: hospital-data-model-agent
+description: Foundry-hosted demo agent for hospital data exploration, dimensional modeling, and SQL generation.
+template:
+  kind: hosted
+  protocols:
+    responses: v1
+  environment_variables:
+    - FOUNDRY_PROJECT_ENDPOINT
+    - FOUNDRY_MODEL_DEPLOYMENT_NAME
+    - AGENT_NAME
+    - DEMO_PRD_PATH
+    - DEMO_SOURCE_CATALOG_PATH
+    - DEMO_METRIC_CATALOG_PATH
+    - DEMO_PROFILE_PATH

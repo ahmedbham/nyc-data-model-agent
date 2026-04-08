@@ -1,0 +1,12 @@
+encounter_id,diagnosis_sequence,icd10_code,diagnosis_description,is_primary
+E1001,1,I50.9,Heart failure unspecified,1
+E1001,2,E11.9,Type 2 diabetes mellitus without complications,0
+E1002,1,J18.9,Pneumonia unspecified organism,1
+E1003,1,I25.10,Atherosclerotic heart disease,1
+E1004,1,K35.80,Acute appendicitis,1
+E1005,1,I50.9,Heart failure unspecified,1
+E1006,1,A41.9,Sepsis unspecified organism,1
+E1007,1,R07.9,Chest pain unspecified,1
+E1008,1,I21.4,Non-ST elevation myocardial infarction,1
+E1009,1,J44.9,Chronic obstructive pulmonary disease,1
+E1010,1,K35.80,Acute appendicitis,1
