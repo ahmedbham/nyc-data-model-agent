@@ -1,56 +1,108 @@
 # Hospital Data Model Agent Demo
 
-This repository contains an initial Microsoft-first demo scaffold for the first three business use cases in [prompts/use-case-1-requirements.md](prompts/use-case-1-requirements.md):
+## What Is Being Developed So Far
+
+This repository contains the initial implementation scaffold for a Microsoft-first demo covering the first three prioritized use cases in [prompts/use-case-1-requirements.md](prompts/use-case-1-requirements.md):
 
 1. Autonomous data exploration.
 2. Target data model and supporting data flows.
 3. SQL and model generation.
 
-The implementation is designed as a Foundry-hosted Python agent service with local demo assets that provide:
+The current implementation is a Foundry-hosted Python agent starter for a hospital analytics demo focused on inpatient readmission and length-of-stay reporting. The repo currently includes:
 
-- A sample product requirements document.
-- A sample source schema and metric catalog.
-- Synthetic hospital source data.
-- SQL to create the demo source schema.
+- A hosted agent entrypoint in [app/main.py](app/main.py).
+- A demo PRD in [docs/demo-prd.md](docs/demo-prd.md).
+- A source catalog in [docs/source-catalog.md](docs/source-catalog.md).
+- A metric catalog in [docs/metric-catalog.md](docs/metric-catalog.md).
+- Synthetic sample source data in [data/sample/patients.csv](data/sample/patients.csv), [data/sample/encounters.csv](data/sample/encounters.csv), [data/sample/diagnoses.csv](data/sample/diagnoses.csv), [data/sample/departments.csv](data/sample/departments.csv), and [data/sample/facilities.csv](data/sample/facilities.csv).
+- Source profiling metadata in [data/profiles/source_profiles.json](data/profiles/source_profiles.json).
+- Demo source and target SQL in [sql/create_demo_source_schema.sql](sql/create_demo_source_schema.sql) and [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql).
+- Foundry deployment metadata in [agent.yaml](agent.yaml).
+- Local debug and run configuration in [.vscode/launch.json](.vscode/launch.json) and [.vscode/tasks.json](.vscode/tasks.json).
 
-## Demo Story
+The current agent loads the demo PRD, source catalog, metric catalog, and profiling metadata into its instructions so it can act as a hospital data product copilot for the demo scenario.
 
-The demo focuses on inpatient readmission and length-of-stay analytics for a synthetic three-facility hospital system. The agent is intended to accept a PRD plus source context, reason over the first three use cases, and produce:
+Current assumptions:
 
-- Exploratory data analysis guidance.
-- A proposed target dimensional model and data flow.
-- Initial DDL and transformation SQL for a dev environment.
+- Synthetic non-PHI data only.
+- Azure SQL-compatible SQL generation.
+- Dev-only execution for generated SQL.
+- Human approval between model design and SQL execution.
+- One focused hospital analytics scenario rather than a multi-domain rollout.
 
-## Project Layout
+## How To Run A Local Test
 
-- `app/` - Foundry-hosted agent service code.
-- `docs/` - Demo PRD, source catalog, and metric catalog.
-- `data/` - Synthetic source data and profiling metadata.
-- `sql/` - Source schema setup SQL and starter target model SQL.
-- `.vscode/` - Local run and debug configuration.
+### Prerequisites
 
-## Local Setup
+1. Python virtual environment support.
+2. Azure CLI installed if you want to authenticate locally with Azure credentials.
+3. A valid Azure AI Foundry project endpoint and model deployment if you want a full end-to-end test.
 
-1. Create a virtual environment.
-2. Install dependencies from `requirements.txt`.
-3. Copy `.env.template` to `.env` and fill in your Foundry settings.
-4. Authenticate with Azure CLI if using `DefaultAzureCredential` locally.
-5. Run `python app/main.py`.
+### Setup
 
-## Pinned Packages
+1. Create and activate a virtual environment.
+2. Install dependencies:
 
-This scaffold pins preview packages to reduce SDK drift:
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
 
-- `agent-framework-core==1.0.0rc3`
-- `agent-framework-azure-ai==1.0.0rc3`
-- `azure-ai-agentserver-agentframework==1.0.0b16`
-- `azure-ai-agentserver-core==1.0.0b16`
+3. Copy [.env.template](.env.template) to `.env` and populate the required values:
 
-## Current Scope
+- `FOUNDRY_PROJECT_ENDPOINT`
+- `FOUNDRY_MODEL_DEPLOYMENT_NAME`
+- `AGENT_NAME`
+- `DEMO_PRD_PATH`
+- `DEMO_SOURCE_CATALOG_PATH`
+- `DEMO_METRIC_CATALOG_PATH`
+- `DEMO_PROFILE_PATH`
 
-This is an implementation starter for a demo, not a production-ready hospital platform. The current scaffold intentionally assumes:
+4. If testing against a real Foundry resource, sign in with Azure CLI:
 
-- Synthetic non-PHI data.
-- Dev-only SQL execution.
-- Human approval before any generated write operation is promoted.
-- One analytics scenario rather than a multi-domain rollout.
+```powershell
+az login
+```
+
+### Start The Agent Locally
+
+Run the hosted agent service:
+
+```powershell
+.\.venv\Scripts\python.exe app/main.py
+```
+
+This should start a local HTTP service on port `8088` through the Foundry hosting adapter.
+
+### Send A Local Test Request
+
+In a second terminal, send a simple request to the hosted endpoint:
+
+```powershell
+Invoke-WebRequest -Uri http://127.0.0.1:8088/responses -Method POST -ContentType 'application/json' -Body '{"input":"Summarize the demo source tables for readmission analytics.","stream":false}' -UseBasicParsing
+```
+
+Expected behavior:
+
+- If the local server is up and your Foundry settings are valid, the agent should respond with a structured summary.
+- If the server is up but the Foundry project or model settings are placeholders, the endpoint will respond but Azure will return a configuration error such as `ResourceNotFound`.
+
+## Next Steps To Complete The Setup
+
+1. Replace the placeholder `.env` values with a real Foundry project endpoint and model deployment.
+2. Load the synthetic CSV source data into Azure SQL Database or Fabric Warehouse so the demo can show actual source-to-target workflow execution.
+3. Add prompt templates or workflow orchestration logic so the agent produces more structured outputs for EDA, target modeling, and SQL generation.
+4. Add a loader or bootstrap script to create the demo source schema and ingest the sample CSV data automatically.
+5. Add a simple validation step for generated SQL so the demo can show approval and dev-only execution gates.
+6. Add a Power BI model or report over the target schema to complete the business-facing end of the demo.
+7. Add deployment instructions for publishing the agent as a real hosted agent in Azure AI Foundry.
+
+## Key Files
+
+- [app/main.py](app/main.py)
+- [docs/demo-prd.md](docs/demo-prd.md)
+- [docs/source-catalog.md](docs/source-catalog.md)
+- [docs/metric-catalog.md](docs/metric-catalog.md)
+- [data/profiles/source_profiles.json](data/profiles/source_profiles.json)
+- [sql/create_demo_source_schema.sql](sql/create_demo_source_schema.sql)
+- [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql)
+- [agent.yaml](agent.yaml)
