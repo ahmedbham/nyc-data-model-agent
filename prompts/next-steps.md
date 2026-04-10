@@ -1,2 +1,2 @@
-Add prompt templates or workflow logic so the agent can produce more structured EDA, model, and SQL outputs.
-Add a small loader script to push the CSV demo data into Azure SQL or Fabric for the live demo.
+Add a simple validation step for generated SQL so the demo can show approval and dev-only execution gates.
+Add a Power BI model or report over the target schema for the live demo.

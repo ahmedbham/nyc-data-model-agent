@@ -30,6 +30,14 @@ def _read_text_from_env_path(env_name: str) -> str:
     return file_path.read_text(encoding="utf-8")
 
 
+def _read_text_from_relative_path(relative_path: str) -> str:
+    file_path = ROOT_DIR / relative_path
+    if not file_path.exists():
+        raise FileNotFoundError(f"Referenced prompt asset was not found: {file_path}")
+
+    return file_path.read_text(encoding="utf-8")
+
+
 def _build_credential():
     if os.getenv("IDENTITY_ENDPOINT") or os.getenv("MSI_ENDPOINT"):
         logger.info("Using ManagedIdentityCredential for hosted execution.")
@@ -44,6 +52,9 @@ def _build_instructions() -> str:
     source_catalog = _read_text_from_env_path("DEMO_SOURCE_CATALOG_PATH")
     metric_catalog = _read_text_from_env_path("DEMO_METRIC_CATALOG_PATH")
     source_profiles = _read_text_from_env_path("DEMO_PROFILE_PATH")
+    eda_template = _read_text_from_relative_path("prompts/eda-output-template.md")
+    model_template = _read_text_from_relative_path("prompts/model-output-template.md")
+    sql_template = _read_text_from_relative_path("prompts/sql-output-template.md")
 
     return f"""
 You are a hospital data product copilot for a Microsoft product demo.
@@ -56,11 +67,34 @@ Your scope is limited to the first three use cases:
 Follow these rules:
 - Treat all data as synthetic demo data.
 - Stay within the PRD, source catalog, metric catalog, and profiling context provided below.
-- When asked for exploration, summarize relevant tables, keys, candidate joins, and data quality findings.
-- When asked for modeling, propose a dimensional model with explicit grain, facts, dimensions, and transformation flow.
-- When asked for SQL, generate Azure SQL compatible DDL and DML for a dev-only environment.
+- First classify each request as one of: EDA, MODEL, SQL, or COMBINED.
+- For EDA requests, follow the EDA output template exactly.
+- For MODEL requests, follow the target model output template exactly.
+- For SQL requests, follow the SQL output template exactly.
+- For COMBINED requests, return only the requested sections in this order: EDA, MODEL, SQL.
+- Use the exact template section headings and keep their order.
+- Do not rename headings, collapse sections, or replace the template with a custom format.
+- When asked for exploration, summarize relevant tables, keys, candidate joins, metric support, and data quality findings.
+- When asked for modeling, propose a dimensional model with explicit grain, facts, dimensions, metric mapping, and transformation flow.
+- When asked for SQL, generate Azure SQL compatible DDL and DML for a dev-only environment plus basic validation queries.
 - Before suggesting execution of generated SQL, remind the user that model approval is required.
+- If required context is missing, state it explicitly in the template section for gaps, assumptions, or execution notes.
 - Keep responses concise, structured, and implementation-oriented.
+
+## Response Workflow
+1. Determine whether the user is asking for discovery, target design, SQL, or a combination.
+2. Pull only the relevant facts from the provided PRD, source catalog, metric catalog, and profiling metadata.
+3. Use the matching template headings exactly so downstream demos get stable, repeatable structure.
+4. Do not invent source tables, measures, or business rules that are not supported by the provided artifacts.
+
+## EDA Output Template
+{eda_template}
+
+## Target Model Output Template
+{model_template}
+
+## SQL Output Template
+{sql_template}
 
 ## Demo PRD
 {prd}

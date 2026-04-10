@@ -20,7 +20,7 @@ The current implementation is a Foundry-hosted Python agent starter for a hospit
 - Foundry deployment metadata in [agent.yaml](agent.yaml).
 - Local debug and run configuration in [.vscode/launch.json](.vscode/launch.json) and [.vscode/tasks.json](.vscode/tasks.json).
 
-The current agent loads the demo PRD, source catalog, metric catalog, and profiling metadata into its instructions so it can act as a hospital data product copilot for the demo scenario.
+The current agent loads the demo PRD, source catalog, metric catalog, profiling metadata, and structured output templates into its instructions so it can act as a hospital data product copilot for the demo scenario.
 
 Current assumptions:
 
@@ -127,10 +127,9 @@ Expected behavior:
 ## Next Steps To Complete The Setup
 
 1. Replace the placeholder `.env` values with a real Foundry project endpoint and model deployment.
-2. Add prompt templates or workflow orchestration logic so the agent produces more structured outputs for EDA, target modeling, and SQL generation.
-3. Add a simple validation step for generated SQL so the demo can show approval and dev-only execution gates.
-4. Add a Power BI model or report over the target schema to complete the business-facing end of the demo.
-5. Add deployment instructions for publishing the agent as a real hosted agent in Azure AI Foundry.
+2. Add a simple validation step for generated SQL so the demo can show approval and dev-only execution gates.
+3. Add a Power BI model or report over the target schema to complete the business-facing end of the demo.
+4. Add deployment instructions for publishing the agent as a real hosted agent in Azure AI Foundry.
 
 ## Demo Data Loader Assets
 
@@ -150,6 +149,9 @@ Expected behavior:
 - [docs/source-catalog.md](docs/source-catalog.md)
 - [docs/metric-catalog.md](docs/metric-catalog.md)
 - [data/profiles/source_profiles.json](data/profiles/source_profiles.json)
+- [prompts/eda-output-template.md](prompts/eda-output-template.md)
+- [prompts/model-output-template.md](prompts/model-output-template.md)
+- [prompts/sql-output-template.md](prompts/sql-output-template.md)
 - [sql/create_demo_source_schema.sql](sql/create_demo_source_schema.sql)
 - [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql)
 - [agent.yaml](agent.yaml)
