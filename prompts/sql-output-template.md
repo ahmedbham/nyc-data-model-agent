@@ -13,6 +13,7 @@ Output contract:
 
 ## Approval Gate
 - State that the SQL is for a dev-only environment and requires human approval before execution.
+- Tell the user to validate the SQL with `python app/validate_generated_sql.py --sql-file <path-to-sql> --target-environment dev --approved-by <name>` before any execution step.
 
 ## Target Objects
 - List the tables, views, or helper objects being created or populated.
@@ -31,6 +32,9 @@ Output contract:
 ```sql
 -- Basic row-count or metric validation queries go here
 ```
+
+## Validation Gate
+- Summarize the validation expectation: dev-only target, named approver required, and no execution until the validation step passes.
 
 ## Execution Notes
 - State assumptions, ordering, dependencies, and anything intentionally left for later hardening.

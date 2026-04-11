@@ -69,6 +69,10 @@ Optional for SQL authentication mode:
 - `AZURE_SQL_USERNAME`
 - `AZURE_SQL_PASSWORD`
 
+Optional for Microsoft Entra interactive browser fallback:
+
+- `AZURE_SQL_ENABLE_INTERACTIVE_AUTH=true`
+
 4. If testing against a real Foundry resource, sign in with Azure CLI:
 
 ```powershell
@@ -127,9 +131,18 @@ Expected behavior:
 ## Next Steps To Complete The Setup
 
 1. Replace the placeholder `.env` values with a real Foundry project endpoint and model deployment.
-2. Add a simple validation step for generated SQL so the demo can show approval and dev-only execution gates.
-3. Add a Power BI model or report over the target schema to complete the business-facing end of the demo.
-4. Add deployment instructions for publishing the agent as a real hosted agent in Azure AI Foundry.
+
+## Foundry Deployment
+
+Deployment instructions for publishing this repo as a hosted agent in Azure AI Foundry are documented in [docs/foundry-deployment.md](docs/foundry-deployment.md).
+
+The deployment runbook covers:
+
+- local pre-deployment verification
+- ACR image build guidance
+- hosted agent configuration based on [agent.yaml](agent.yaml)
+- container startup and smoke-test validation
+- post-deployment demo flow
 
 ## Demo Data Loader Assets
 
@@ -141,14 +154,72 @@ Expected behavior:
 - [data/sample/encounters.csv](data/sample/encounters.csv)
 - [data/sample/diagnoses.csv](data/sample/diagnoses.csv)
 
+## SQL Validation Gate
+
+The repo now includes a lightweight SQL validator at [app/validate_generated_sql.py](app/validate_generated_sql.py). Use it after the agent produces SQL and before any execution step.
+
+Example without approval, showing the gate is still closed:
+
+```powershell
+.\.venv\Scripts\python.exe app/validate_generated_sql.py --sql-file sql/create_demo_target_model.sql --target-environment dev
+```
+
+Example with a named approver, allowing dev-only execution:
+
+```powershell
+.\.venv\Scripts\python.exe app/validate_generated_sql.py --sql-file sql/create_demo_target_model.sql --target-environment dev --approved-by demo-owner
+```
+
+Expected behavior:
+
+- The validator fails if the target environment is not `dev`.
+- The validator fails if no approver is supplied.
+- The validator blocks clearly unsafe server-level statements and warns on risky table-reset patterns.
+- The validator exits successfully only when the dev-only and approval gates are satisfied.
+
+## Target Model Execution
+
+The repo now includes an execution utility at [app/run_target_model_sql.py](app/run_target_model_sql.py). It runs [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql) against Azure SQL Database and prints the validation query result sets at the end of the script.
+
+First validate the SQL and capture approval:
+
+```powershell
+.\.venv\Scripts\python.exe app/validate_generated_sql.py --sql-file sql/create_demo_target_model.sql --target-environment dev --approved-by demo-owner
+```
+
+Then execute the target model script:
+
+```powershell
+.\.venv\Scripts\python.exe app/run_target_model_sql.py
+```
+
+For repeat demos where the target tables already exist, use:
+
+```powershell
+.\.venv\Scripts\python.exe app/run_target_model_sql.py --reset-target
+```
+
+Expected behavior:
+
+- The script connects using the same Azure SQL auth settings as the source-data loader.
+- By default the script prefers non-interactive credentials such as Azure CLI. Set `AZURE_SQL_ENABLE_INTERACTIVE_AUTH=true` only if you explicitly want browser-based fallback.
+- The script executes the target model DDL, population SQL, and built-in validation queries.
+- The script prints each validation result set directly to the terminal for demo-friendly verification.
+
 ## Key Files
 
 - [app/main.py](app/main.py)
 - [app/load_demo_source_data.py](app/load_demo_source_data.py)
+- [app/run_target_model_sql.py](app/run_target_model_sql.py)
+- [app/sql_connection.py](app/sql_connection.py)
+- [app/validate_generated_sql.py](app/validate_generated_sql.py)
 - [docs/demo-prd.md](docs/demo-prd.md)
+- [docs/foundry-deployment.md](docs/foundry-deployment.md)
 - [docs/source-catalog.md](docs/source-catalog.md)
 - [docs/metric-catalog.md](docs/metric-catalog.md)
+- [docs/powerbi-report-spec.md](docs/powerbi-report-spec.md)
 - [data/profiles/source_profiles.json](data/profiles/source_profiles.json)
+- [powerbi/starter-semantic-model.md](powerbi/starter-semantic-model.md)
 - [prompts/eda-output-template.md](prompts/eda-output-template.md)
 - [prompts/model-output-template.md](prompts/model-output-template.md)
 - [prompts/sql-output-template.md](prompts/sql-output-template.md)

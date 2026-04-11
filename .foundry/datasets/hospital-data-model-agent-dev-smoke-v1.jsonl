@@ -1,0 +1,3 @@
+{"query":"Provide an exploratory analysis of the source data for readmission analytics using the EDA template."}
+{"query":"Propose a target dimensional model for 30-day readmission and average length-of-stay reporting using the model template."}
+{"query":"Generate Azure SQL starter DDL and transformation SQL for the target model using the SQL template."}
