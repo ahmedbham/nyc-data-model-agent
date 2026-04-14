@@ -206,6 +206,30 @@ Expected behavior:
 - The script executes the target model DDL, population SQL, and built-in validation queries.
 - The script prints each validation result set directly to the terminal for demo-friendly verification.
 
+## Power BI Demo Layer
+
+The repo includes Power BI guidance for the business-facing end of the demo.
+
+Use these artifacts together:
+
+- Report specification: [docs/powerbi-report-spec.md](docs/powerbi-report-spec.md)
+- Semantic model mapping: [powerbi/starter-semantic-model.md](powerbi/starter-semantic-model.md)
+
+Recommended setup flow:
+
+1. Run the source-data loader and target-model execution scripts so Azure SQL contains the populated target schema.
+2. In Power BI Desktop, connect to the Azure SQL Database in import mode.
+3. Import `fact_encounter_outcomes`, `dim_patient`, `dim_facility`, `dim_department`, and `dim_diagnosis`.
+4. Apply the relationships and starter DAX measures from [powerbi/starter-semantic-model.md](powerbi/starter-semantic-model.md).
+5. Build the report pages and visuals described in [docs/powerbi-report-spec.md](docs/powerbi-report-spec.md).
+6. Refresh the report after rerunning the target-model script during the live demo.
+
+Expected outcome:
+
+- KPI cards for readmission rate, average length of stay, and encounter count.
+- Drill-down analysis by facility, department, diagnosis, and age group.
+- A report layer that matches the validation results printed by [app/run_target_model_sql.py](app/run_target_model_sql.py).
+
 ## Key Files
 
 - [app/main.py](app/main.py)

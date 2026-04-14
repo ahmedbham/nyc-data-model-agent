@@ -2,6 +2,9 @@ name: hospital-data-model-agent
 description: Foundry-hosted demo agent for hospital data exploration, dimensional modeling, and SQL generation.
 template:
   kind: hosted
+  image: acrbhimdev2uyxgp.azurecr.io/hospital-data-model-agent:20260410-1830
+  cpu: "1"
+  memory: "2Gi"
   protocols:
     responses: v1
   environment_variables:
