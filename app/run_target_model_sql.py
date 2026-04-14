@@ -19,6 +19,8 @@ RESET_ORDER = [
     "dim_department",
     "dim_facility",
     "dim_patient",
+    "dim_age_group",
+    "dim_date"
 ]
 
 
@@ -61,6 +63,10 @@ def _table_exists(cursor, table_name: str) -> bool:
     return cursor.fetchone() is not None
 
 
+def _existing_target_tables(cursor) -> list[str]:
+    return [table_name for table_name in RESET_ORDER if _table_exists(cursor, table_name)]
+
+
 def _reset_target_tables(cursor) -> None:
     for table_name in RESET_ORDER:
         if _table_exists(cursor, table_name):
@@ -68,10 +74,19 @@ def _reset_target_tables(cursor) -> None:
             logger.info("Dropped existing target table %s.", table_name)
 
 
+def _summarize_batch(batch: str) -> str:
+    lines = [line.strip() for line in batch.splitlines() if line.strip()]
+    return " ".join(lines[:3])[:240]
+
+
 def _run_batches(cursor, sql_text: str) -> int:
     result_set_count = 0
-    for batch in _split_batches(sql_text):
-        cursor.execute(batch)
+    for batch_number, batch in enumerate(_split_batches(sql_text), start=1):
+        try:
+            cursor.execute(batch)
+        except Exception as error:
+            logger.error("Execution failed in batch %s: %s", batch_number, _summarize_batch(batch))
+            raise RuntimeError(f"Target-model SQL failed in batch {batch_number}.") from error
         while True:
             if cursor.description:
                 result_set_count += 1
@@ -106,8 +121,17 @@ def main() -> None:
     connection = build_connection()
     try:
         cursor = connection.cursor()
+        logger.info("Executing target model SQL from %s", args.sql_file)
         if args.reset_target:
             _reset_target_tables(cursor)
+        else:
+            existing_tables = _existing_target_tables(cursor)
+            if existing_tables:
+                existing_table_list = ", ".join(existing_tables)
+                raise RuntimeError(
+                    "Target tables already exist and this SQL file is not idempotent. "
+                    f"Existing tables: {existing_table_list}. Re-run with --reset-target or make the SQL idempotent."
+                )
 
         result_set_count = _run_batches(cursor, sql_text)
         connection.commit()
