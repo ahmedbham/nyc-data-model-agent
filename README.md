@@ -37,7 +37,7 @@ Current assumptions:
 1. Python virtual environment support.
 2. Azure CLI installed if you want to authenticate locally with Azure credentials.
 3. ODBC Driver 18 for SQL Server installed if you want to load the synthetic CSVs into Azure SQL Database.
-4. A valid Azure AI Foundry project endpoint and model deployment if you want a full end-to-end test.
+4. A valid Microsoft Foundry project endpoint and model deployment if you want a full end-to-end test.
 
 ### Setup
 
@@ -201,7 +201,7 @@ Expected behavior:
 
 ## Foundry Deployment
 
-Deployment instructions for publishing this repo as a hosted agent in Azure AI Foundry are documented in [docs/foundry-deployment.md](docs/foundry-deployment.md).
+Deployment instructions for publishing this repo as a hosted agent in Microsoft Foundry are documented in [docs/foundry-deployment.md](docs/foundry-deployment.md).
 
 The deployment runbook covers:
 

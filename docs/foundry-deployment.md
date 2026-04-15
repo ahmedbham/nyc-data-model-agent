@@ -1,8 +1,8 @@
-# Azure AI Foundry Deployment Runbook
+# Microsoft Foundry Deployment Runbook
 
 ## Purpose
 
-This runbook describes how to publish the hospital data model agent as a real hosted agent in Azure AI Foundry using the existing [agent.yaml](agent.yaml), Python app entrypoint, and container image workflow.
+This runbook describes how to publish the hospital data model agent as a real hosted agent in Microsoft Foundry using the existing [agent.yaml](agent.yaml), Python app entrypoint, and container image workflow.
 
 ## Deployment Shape
 
@@ -14,7 +14,7 @@ This runbook describes how to publish the hospital data model agent as a real ho
 
 ## Prerequisites
 
-1. An Azure AI Foundry project endpoint.
+1. An Microsoft Foundry project endpoint.
 2. A model deployment in that Foundry project for `FOUNDRY_MODEL_DEPLOYMENT_NAME`.
 3. An Azure Container Registry available for the hosted image.
 4. Azure CLI authenticated to the target tenant and subscription.
@@ -87,7 +87,7 @@ Expected output:
 
 ## Create Or Update The Hosted Agent
 
-Use Azure AI Foundry with the hosted-agent definition in [agent.yaml](agent.yaml). The deployment payload should match this repo’s runtime shape:
+Use Microsoft Foundry with the hosted-agent definition in [agent.yaml](agent.yaml). The deployment payload should match this repo’s runtime shape:
 
 - `kind=hosted`
 - `image=<acr-name>.azurecr.io/hospital-data-model-agent:<timestamp>`
