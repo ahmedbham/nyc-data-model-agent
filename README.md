@@ -16,7 +16,7 @@ The current implementation is a Foundry-hosted Python agent starter for a hospit
 - A metric catalog in [docs/metric-catalog.md](docs/metric-catalog.md).
 - Synthetic sample source data in [data/sample/patients.csv](data/sample/patients.csv), [data/sample/encounters.csv](data/sample/encounters.csv), [data/sample/diagnoses.csv](data/sample/diagnoses.csv), [data/sample/departments.csv](data/sample/departments.csv), and [data/sample/facilities.csv](data/sample/facilities.csv).
 - Source profiling metadata in [data/profiles/source_profiles.json](data/profiles/source_profiles.json).
-- Demo source and target SQL in [sql/create_demo_source_schema.sql](sql/create_demo_source_schema.sql) and [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql).
+- Demo source schema SQL in [sql/create_demo_source_schema.sql](sql/create_demo_source_schema.sql), generated target-model working SQL in [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql), and a checked-in reference snapshot in [sql/create_demo_target_model.sample.sql](sql/create_demo_target_model.sample.sql).
 - Foundry deployment metadata in [agent.yaml](agent.yaml).
 - Local debug and run configuration in [.vscode/launch.json](.vscode/launch.json) and [.vscode/tasks.json](.vscode/tasks.json).
 
@@ -123,76 +123,24 @@ $response = Invoke-WebRequest -Uri http://127.0.0.1:8088/responses -Method POST 
 ($response.Content | ConvertFrom-Json).output[0].content[0].text
 ```
 
-For a reusable end-to-end demo request covering EDA, target modeling, and starter SQL generation, use:
+For the reusable end-to-end flow that generates [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql) from the agent response automatically, use:
 
 ```powershell
-$prompt = @'
-Using the inpatient readmission analytics demo context, complete this request in three phases: EDA, target modeling, and starter SQL generation.
+.\.venv\Scripts\python.exe app/generate_target_model_sql.py --save-response-file sql/create_demo_target_model.response.md
+```
 
-Phase requirements:
-1. First produce the EDA output using the exact section headings and order from the repo's EDA output template.
-2. Then produce the target model output using the exact section headings and order from the repo's model output template.
-3. Then produce Azure SQL starter SQL using the exact section headings and order from the repo's SQL output template.
+The generator reads [prompts/generate-target-model-sql-request.md](prompts/generate-target-model-sql-request.md), sends it to the local `/responses` endpoint, extracts the fenced SQL blocks from the `## DDL`, `## Transformation SQL`, and `## Validation Queries` sections, and writes the combined result to [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql).
 
-Business objective:
-Create an analytics-ready dimensional model for 30-day readmission and length-of-stay reporting that supports both dashboarding and self-service analysis.
+If you want to paste a copied response instead of calling the endpoint automatically, save the markdown response to a file and run:
 
-Source tables:
-- patients
-- encounters
-- diagnoses
-- departments
-- facilities
-
-Required joins:
-- patients.patient_id = encounters.patient_id
-- encounters.encounter_id = diagnoses.encounter_id
-- departments.department_id = encounters.department_id
-- facilities.facility_id = encounters.facility_id
-
-Metrics to support:
-- readmission_rate_30d
-- average_length_of_stay
-- encounter_count
-- discharge_count
-- readmission_count_30d
-
-Business rules:
-- Only inpatient encounters are in scope.
-- Readmission matching uses patient identity and a subsequent inpatient admission within 30 days of discharge.
-- Primary diagnosis comes from the diagnosis row where is_primary = 1.
-- Age group is derived from patient birth date as of admit date.
-
-Modeling expectations:
-- Propose a dimensional model with explicit fact grain.
-- Keep fact tables and dimensions separate.
-- Include metric-to-model mapping.
-- Include a source-to-target transformation flow.
-- Call out assumptions and tradeoffs, especially around readmission logic, diagnosis handling, and age grouping.
-- Keep the design compatible with Azure SQL Database.
-
-SQL expectations:
-- Generate Azure SQL compatible DDL, transformation SQL, and validation queries.
-- Keep SQL dev-only.
-- Do not include server-level administration statements, EXEC or EXECUTE, or system-database switching.
-- Include SELECT-based validation queries.
-- State clearly that human approval is required before execution.
-- Include the validation command the user must run before execution.
-
-Output expectations:
-- Keep each phase clearly separated.
-- Do not skip open gaps or design decisions.
-- Do not execute anything.
-'@
-
-$body = @{ input = $prompt; stream = $false } | ConvertTo-Json -Compress
-$response = Invoke-WebRequest -Uri http://127.0.0.1:8088/responses -Method POST -ContentType 'application/json' -Body $body -UseBasicParsing
-($response.Content | ConvertFrom-Json).output[0].content[0].text
+```powershell
+.\.venv\Scripts\python.exe app/generate_target_model_sql.py --response-file .\tmp\agent-response.md --output-sql-file sql/create_demo_target_model.sql
 ```
 
 Expected behavior:
 
 - If the local server is up and your Foundry settings are valid, the agent should respond with a structured summary.
+- The generator should recreate [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql) from the latest agent response and optionally save the raw markdown response for inspection.
 - If the server is up but the Foundry project or model settings are placeholders, the endpoint will respond but Azure will return a configuration error such as `ResourceNotFound`.
 
 ## Next Steps To Complete The Setup
@@ -223,7 +171,9 @@ The deployment runbook covers:
 
 ## SQL Validation Gate
 
-The repo now includes a lightweight SQL validator at [app/validate_generated_sql.py](app/validate_generated_sql.py). Use it after the agent produces SQL and before any execution step.
+The repo now includes a lightweight SQL validator at [app/validate_generated_sql.py](app/validate_generated_sql.py). Use it after [app/generate_target_model_sql.py](app/generate_target_model_sql.py) recreates [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql) and before any execution step.
+
+The checked-in reference snapshot is kept in [sql/create_demo_target_model.sample.sql](sql/create_demo_target_model.sample.sql). Do not validate or execute the sample path unless you intentionally copy it back into the generated working file.
 
 Example without approval, showing the gate is still closed:
 
@@ -246,7 +196,13 @@ Expected behavior:
 
 ## Target Model Execution
 
-The repo now includes an execution utility at [app/run_target_model_sql.py](app/run_target_model_sql.py). It runs [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql) against Azure SQL Database and prints the validation query result sets at the end of the script.
+The repo now includes an execution utility at [app/run_target_model_sql.py](app/run_target_model_sql.py). It runs the generated [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql) against Azure SQL Database and prints the validation query result sets at the end of the script.
+
+Recommended order:
+
+1. Run [app/generate_target_model_sql.py](app/generate_target_model_sql.py) to refresh [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql) from the latest agent response.
+2. Run [app/validate_generated_sql.py](app/validate_generated_sql.py) with a named approver.
+3. Run [app/run_target_model_sql.py](app/run_target_model_sql.py) after the validation gate passes.
 
 First validate the SQL and capture approval:
 
@@ -301,7 +257,9 @@ Expected outcome:
 
 - [app/main.py](app/main.py)
 - [app/load_demo_source_data.py](app/load_demo_source_data.py)
+- [app/generate_target_model_sql.py](app/generate_target_model_sql.py)
 - [app/run_target_model_sql.py](app/run_target_model_sql.py)
+- [app/sql_response_extractor.py](app/sql_response_extractor.py)
 - [app/sql_connection.py](app/sql_connection.py)
 - [app/validate_generated_sql.py](app/validate_generated_sql.py)
 - [docs/demo-prd.md](docs/demo-prd.md)
@@ -312,8 +270,10 @@ Expected outcome:
 - [data/profiles/source_profiles.json](data/profiles/source_profiles.json)
 - [powerbi/starter-semantic-model.md](powerbi/starter-semantic-model.md)
 - [prompts/eda-output-template.md](prompts/eda-output-template.md)
+- [prompts/generate-target-model-sql-request.md](prompts/generate-target-model-sql-request.md)
 - [prompts/model-output-template.md](prompts/model-output-template.md)
 - [prompts/sql-output-template.md](prompts/sql-output-template.md)
 - [sql/create_demo_source_schema.sql](sql/create_demo_source_schema.sql)
 - [sql/create_demo_target_model.sql](sql/create_demo_target_model.sql)
+- [sql/create_demo_target_model.sample.sql](sql/create_demo_target_model.sample.sql)
 - [agent.yaml](agent.yaml)
